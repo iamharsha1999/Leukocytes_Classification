@@ -2,8 +2,21 @@
 from Model import DL_Model
 from keras.callbacks import ModelCheckpoint
 from keras.utils import to_categorical
+from keras.utils.generic_utils import get_custom_objects
+from keras.layers import Activation
+from keras import backend as K
 import  numpy as np
 
+class Swish(Activation):
+
+    def __init__(self, activation, **kwargs):
+        super(Swish, self).__init__(activation, **kwargs)
+        self.__name__ = 'swish'
+
+def swish(x):
+    return K.sigmoid(x) * x
+
+get_custom_objects().update({'swish': Swish(swish)})
 
 x_train = np.load('Dataset/Image_Classification/Numpy Files/x_train.npy')
 x_val = np.load('Dataset/Image_Classification/Numpy Files/x_val.npy')
@@ -16,7 +29,7 @@ y_val   = to_categorical(y_val, num_classes = 5)
 num_classes = 5
 
 ## Build the Model
-model = DL_Model.build_feature_model(300, 300, 3, num_classes, 'resnet50')
+model = DL_Model.build_feature_model(300, 300, 3, num_classes, 'smallvgg16')
 model.compile(loss = 'categorical_crossentropy', optimizer  = 'adam', metrics = ['accuracy'])
 model.summary()
 

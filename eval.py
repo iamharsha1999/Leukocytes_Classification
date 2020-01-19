@@ -14,6 +14,9 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import LabelEncoder
+import time
+import seaborn as sn
+import pandas as pd
 
 class Swish(Activation):
 
@@ -65,15 +68,16 @@ def plot_confusion_matrix(cm, classes,
 labels = ['Basophils', 'Eosinophils', 'Lymphocytes', 'Monocytes', 'Neutrophils']
 
 ## Weight path
-weight_path = 'Dataset/Image_Classification/Weights/weights-improvement-36-0.94_best_so_far.hdf5'
+weight_path = 'Image_Classification/Weights/SmallVGG_Fully_Swish/SGD_Momemtum/weights-94-0.97.hdf5'
 
 ## Load the Files
-x_train = np.load('Dataset/Image_Classification/Numpy Files/x_train.npy')
-x_val   = np.load('Dataset/Image_Classification/Numpy Files/x_val.npy')
-y_train = np.load('Dataset/Image_Classification/Numpy Files/y_train.npy')
-y_val   = np.load('Dataset/Image_Classification/Numpy Files/y_val.npy')
-x       = np.load('Dataset/Image_Classification/Numpy Files/x.npy')
-y       = np.load('Dataset/Image_Classification/Numpy Files/y.npy')
+x_train = np.load('Image_Classification/Numpy Files/x_train.npy')
+x_val   = np.load('Image_Classification/Numpy Files/x_val.npy')
+y_train = np.load('Image_Classification/Numpy Files/y_train.npy')
+y_val   = np.load('Image_Classification/Numpy Files/y_val.npy')
+x       = np.load('Image_Classification/Numpy Files/x.npy')
+y       = np.load('Image_Classification/Numpy Files/y.npy')
+x = (x.astype(np.float32))/255
 ## Encode the labels
 
 y_train = to_categorical(y_train, num_classes = 5)
@@ -85,7 +89,10 @@ model.load_weights(weight_path)
 
 # yp_val = model.predict(x_val, verbose =1)
 # yp_train = model.predict(x_train, verbose = 1)
+start = time.process_time()
 yp = model.predict(x, verbose = 1)
+end = time.process_time()
+
 yp = np.argmax(yp,axis=1)
 # yp = to_categorical(yp, num_classes= 5)
 
@@ -101,12 +108,13 @@ print('Recall: %f' % recall)
 f1 = f1_score(yp, y, average = 'macro')
 print('F1 score: %f' % f1)
 
-
+time_taken = end - start
+print("Time Taken for Prediction: ", time_taken)
 
 # confusion matrix
-
-
 matrix = confusion_matrix(yp, y)
-
-plt.figure()
-plot_confusion_matrix(matrix, classes=labels,title='Confusion Matrix')
+df_cm = pd.DataFrame(matrix, index = labels,columns = labels)
+fig = plt.figure()
+sn.heatmap(df_cm, annot=True)
+fig.tight_layout()
+plt.savefig('bla.png')
